@@ -138,13 +138,23 @@ export default {
       }
     },
     handleSearch() {
-      uni.navigateTo({
-        url: `/pages/goods/list?keyword=${this.searchKeyword}`
+      // 由于goods/list是tabBar页面，需要使用switchTab而不是navigateTo
+      uni.switchTab({
+        url: '/pages/goods/list'
       })
+      // 通过本地存储传递搜索关键词参数
+      uni.setStorageSync('searchKeyword', this.searchKeyword)
     },
     goToCategory(category) {
-      uni.navigateTo({
-        url: `/pages/goods/list?categoryId=${category.id}`
+      // 根据分类ID跳转到对应的页面
+      // 由于goods/list是tabBar页面，需要使用switchTab而不是navigateTo
+      uni.switchTab({
+        url: '/pages/goods/list'
+      })
+      // 通过全局状态管理或本地存储传递分类参数
+      uni.setStorageSync('currentCategory', {
+        id: category.id,
+        name: category.name
       })
     },
     goToGoodsList() {

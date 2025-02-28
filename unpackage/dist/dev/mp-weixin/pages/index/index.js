@@ -46,13 +46,18 @@ const _sfc_main = {
       }
     },
     handleSearch() {
-      common_vendor.index.navigateTo({
-        url: `/pages/goods/list?keyword=${this.searchKeyword}`
+      common_vendor.index.switchTab({
+        url: "/pages/goods/list"
       });
+      common_vendor.index.setStorageSync("searchKeyword", this.searchKeyword);
     },
     goToCategory(category) {
-      common_vendor.index.navigateTo({
-        url: `/pages/goods/list?categoryId=${category.id}`
+      common_vendor.index.switchTab({
+        url: "/pages/goods/list"
+      });
+      common_vendor.index.setStorageSync("currentCategory", {
+        id: category.id,
+        name: category.name
       });
     },
     goToGoodsList() {

@@ -8,12 +8,9 @@ const _sfc_main = {
       categories: [
         { id: 1, name: "全部" },
         { id: 2, name: "手机数码" },
-        { id: 3, name: "家用电器" },
-        { id: 4, name: "服装鞋包" },
-        { id: 5, name: "食品生鲜" },
-        { id: 6, name: "美妆个护" },
-        { id: 7, name: "母婴玩具" },
-        { id: 8, name: "家居日用" }
+        { id: 3, name: "服饰鞋包" },
+        { id: 4, name: "食品生鲜" },
+        { id: 5, name: "家居家装" }
       ],
       goodsList: [],
       page: 1,
@@ -26,12 +23,26 @@ const _sfc_main = {
         { text: "0-100", min: 0, max: 100 },
         { text: "100-500", min: 100, max: 500 },
         { text: "500-1000", min: 500, max: 1e3 },
-        { text: "1000以上", min: 1e3, max: 999999 }
+        { text: "1000+", min: 1e3, max: 999999 }
       ],
       filterPrice: null
     };
   },
-  onLoad() {
+  onLoad(options) {
+    const categoryInfo = common_vendor.index.getStorageSync("currentCategory");
+    if (categoryInfo) {
+      this.currentCategory = categoryInfo.id;
+      common_vendor.index.removeStorageSync("currentCategory");
+    } else if (options.categoryId) {
+      this.currentCategory = parseInt(options.categoryId);
+    }
+    const keyword = common_vendor.index.getStorageSync("searchKeyword");
+    if (keyword) {
+      this.keyword = keyword;
+      common_vendor.index.removeStorageSync("searchKeyword");
+    } else if (options.keyword) {
+      this.keyword = options.keyword;
+    }
     this.loadGoodsList();
   },
   onReachBottom() {
@@ -45,12 +56,17 @@ const _sfc_main = {
       try {
         let mockGoods = Array(10).fill().map((_, index) => ({
           id: this.page * 10 + index,
-          name: `商品${this.page * 10 + index}`,
+          name: `商品 ${this.page * 10 + index}`,
           price: Math.floor(Math.random() * 1e3 + 100),
           image: "/static/logo.png",
           sales: Math.floor(Math.random() * 500),
-          tags: this.generateRandomTags()
+          tags: this.generateRandomTags(),
+          categoryId: Math.floor(Math.random() * 8) + 1
+          // 随机分配分类ID
         }));
+        if (this.currentCategory && this.currentCategory !== 1) {
+          mockGoods = mockGoods.filter((item) => item.categoryId === this.currentCategory);
+        }
         if (this.filterPrice) {
           mockGoods = mockGoods.filter(
             (item) => item.price >= this.filterPrice.min && item.price <= this.filterPrice.max
@@ -73,7 +89,7 @@ const _sfc_main = {
     },
     // 生成随机标签
     generateRandomTags() {
-      const allTags = ["新品", "热销", "促销", "限时", "包邮", "满减"];
+      const allTags = ["NEW", "HOT", "SALE", "LIMITED", "FREE SHIP"];
       const tags = [];
       const count = Math.floor(Math.random() * 3);
       for (let i = 0; i < count; i++) {
@@ -162,7 +178,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     a: common_vendor.o($options.handleSearch),
     b: common_vendor.o(($event) => $data.keyword = $event),
     c: common_vendor.p({
-      placeholder: "搜索商品",
+      placeholder: "SEARCH PRODUCTS",
+      shape: "round",
       modelValue: $data.keyword
     }),
     d: common_vendor.f($data.categories, (item, k0, i0) => {
@@ -193,15 +210,15 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       size: "14"
     }),
     m: common_vendor.o(($event) => $data.showPriceFilter = true),
-    n: common_vendor.f($data.goodsList, (item, k0, i0) => {
+    n: common_vendor.f($data.goodsList, (item, index, i0) => {
       return common_vendor.e({
         a: item.image,
         b: item.tags && item.tags.length
       }, item.tags && item.tags.length ? {
-        c: common_vendor.f(item.tags, (tag, index, i1) => {
+        c: common_vendor.f(item.tags, (tag, tagIndex, i1) => {
           return {
             a: common_vendor.t(tag),
-            b: index
+            b: tagIndex
           };
         })
       } : {}, {
@@ -209,7 +226,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
         e: common_vendor.t(item.price),
         f: common_vendor.t(item.sales || 0),
         g: item.id,
-        h: common_vendor.o(($event) => $options.goToDetail(item), item.id)
+        h: common_vendor.o(($event) => $options.goToDetail(item), item.id),
+        i: index % 5 === 0 ? 1 : ""
       });
     }),
     o: common_vendor.p({
@@ -217,7 +235,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     }),
     p: common_vendor.o(($event) => $data.showPriceFilter = false),
     q: common_vendor.p({
-      name: "close"
+      name: "close",
+      size: "28"
     }),
     r: $data.minPrice,
     s: common_vendor.o(($event) => $data.minPrice = $event.detail.value),
@@ -231,14 +250,17 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       };
     }),
     x: common_vendor.o($options.resetFilter),
-    y: common_vendor.o($options.confirmFilter),
-    z: common_vendor.p({
+    y: common_vendor.p({
+      plain: true
+    }),
+    z: common_vendor.o($options.confirmFilter),
+    A: common_vendor.p({
       type: "primary"
     }),
-    A: common_vendor.o(($event) => $data.showPriceFilter = $event),
-    B: common_vendor.p({
+    B: common_vendor.o(($event) => $data.showPriceFilter = $event),
+    C: common_vendor.p({
       mode: "bottom",
-      height: "300",
+      height: "400",
       modelValue: $data.showPriceFilter
     })
   };
